@@ -30,8 +30,7 @@ employeeRouter.param('employeeId', (req, res, next, id) => {
 employeeRouter.get('/', (req, res, next) => {
   db.all('SELECT * FROM Employee WHERE is_current_employee = 1', (error, employees) => {
     if (error) {
-      next(error);
-      return;
+      return next(error);
     }
     res.send({ employees });
   })
@@ -48,19 +47,14 @@ employeeRouter.post('/', (req, res, next) => {
     $name: employeeData.name,
     $position: employeeData.position,
     $wage: employeeData.wage,
-  }, function(error) {
-    if (error) {
-      // return res.status(500).send();
-      // res.status(500).send();
-      next(error);
-      return;
+  }, function(createError) {
+    if (createError) {
+      return next(createError);
     }
 
-    db.get('SELECT * FROM Employee WHERE id = $id', { $id: this.lastID }, (error, employee) => {
-      if (error) {
-        // res.status(500).send();
-        next(error);
-        return;
+    db.get('SELECT * FROM Employee WHERE id = $id', { $id: this.lastID }, (selectError, employee) => {
+      if (selectError) {
+        return next(selectError);
       }
 
       res.status(201).send({ employee });
@@ -87,20 +81,14 @@ employeeRouter.put('/:employeeId', (req, res, next) => {
     $name: employeeData.name,
     $position: employeeData.position,
     $wage: employeeData.wage,
-  }, (error) => {
-    if (error) {
-      // res.status(500).send();
-      // return;
-      next(error);
-      return;
+  }, (updateError) => {
+    if (updateError) {
+      return next(updateError);
     }
 
-    db.get('SELECT * FROM Employee WHERE id = $id', { $id: employeeId }, (error, employee) => {
-      if (error) {
-      // res.status(500).send();
-      // return;
-      next(error);
-      return;
+    db.get('SELECT * FROM Employee WHERE id = $id', { $id: employeeId }, (selectError, employee) => {
+      if (selectError) {
+        return next(selectError);
       }
 
       res.status(200).send({ employee });
@@ -109,20 +97,14 @@ employeeRouter.put('/:employeeId', (req, res, next) => {
 });
 
 employeeRouter.delete('/:employeeId', (req, res, next) => {
-  db.run('UPDATE Employee SET is_current_employee = 0 WHERE id IS $id', { $id: req.employee.id }, (error) => {
-    if (error) {
-      // res.status(500).send();
-      // return;
-      next(error);
-      return;
+  db.run('UPDATE Employee SET is_current_employee = 0 WHERE id IS $id', { $id: req.employee.id }, (updateError) => {
+    if (updateError) {
+      return next(updateError);
     }
 
-    db.get('SELECT * FROM Employee WHERE id = $id', { $id: req.employee.id }, (error1, employee) => {
-      if (error1) {
-      // res.status(500).send();
-      // return;
-      next(error1);
-      return;
+    db.get('SELECT * FROM Employee WHERE id = $id', { $id: req.employee.id }, (selectError, employee) => {
+      if (selectError) {
+        return next(selectError);
       }
 
       res.status(200).send({ employee });

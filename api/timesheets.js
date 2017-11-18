@@ -29,8 +29,7 @@ timesheetRouter.get('/', (req, res, next) => {
   const employee = req.employee;
   db.all('SELECT * FROM Timesheet WHERE employee_id = $employee_id', { $employee_id: employee.id }, (error, timesheets) => {
     if (error) {
-      next(error);
-      return;
+      return next(error);
     }
     res.send({ timesheets });
   })
@@ -49,19 +48,14 @@ timesheetRouter.post('/', (req, res, next) => {
     $rate: timesheetData.rate,
     $date: timesheetData.date,
     $employee_id: employee.id,
-  }, function(error) {
-    if (error) {
-      // return res.status(500).send();
-      // res.status(500).send();
-      next(error);
-      return;
+  }, function(createError) {
+    if (createError) {
+      return next(createError);
     }
 
-    db.get('SELECT * FROM timesheet WHERE id = $id', { $id: this.lastID }, (error, timesheet) => {
-      if (error) {
-        // res.status(500).send();
-        next(error);
-        return;
+    db.get('SELECT * FROM timesheet WHERE id = $id', { $id: this.lastID }, (selectError, timesheet) => {
+      if (selectError) {
+        return next(selectError);
       }
 
       res.status(201).send({ timesheet });
@@ -81,8 +75,7 @@ timesheetRouter.put('/:timesheetId', (req, res, next) => {
   const employee = req.employee;
 
   if (!hasRequiredTimesheetFields(timesheetData)) {
-    res.status(400).send();
-    return;
+    return res.status(400).send();
   }
 
   db.run('UPDATE Timesheet SET hours = $hours, rate = $rate, date = $date, employee_id = $employee_id WHERE Timesheet.id = $id', {
@@ -91,20 +84,14 @@ timesheetRouter.put('/:timesheetId', (req, res, next) => {
     $date: timesheetData.date,
     $employee_id: employee.id,
     $id: timesheetId,
-  }, (error) => {
-    if (error) {
-      // res.status(500).send();
-      // return;
-      next(error);
-      return;
+  }, (updateError) => {
+    if (updateError) {
+      return next(updateError);
     }
 
-    db.get('SELECT * FROM Timesheet WHERE id = $id', { $id: timesheetId }, (error, timesheet) => {
-      if (error) {
-      // res.status(500).send();
-      // return;
-      next(error);
-      return;
+    db.get('SELECT * FROM Timesheet WHERE id = $id', { $id: timesheetId }, (selectError, timesheet) => {
+      if (selectError) {
+        return next(selectError);
       }
 
       res.status(200).send({ timesheet });
@@ -117,10 +104,7 @@ timesheetRouter.delete('/:timesheetId', (req, res, next) => {
 
   db.run('DELETE FROM Timesheet WHERE id = $id', { $id: timesheetId }, (error, timesheet) => {
     if (error) {
-      // res.status(500).send();
-      // return;
-      next(error);
-      return;
+      return next(error);
     }
 
     res.status(204).send({ timesheet });

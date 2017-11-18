@@ -28,8 +28,7 @@ menuItemRouter.get('/', (req, res, next) => {
   const menu = req.menu;
   db.all('SELECT * FROM MenuItem WHERE menu_id = $menu_id', { $menu_id: menu.id }, (error, menuItems) => {
     if (error) {
-      next(error);
-      return;
+      return next(error);
     }
     res.send({ menuItems });
   })
@@ -49,19 +48,14 @@ menuItemRouter.post('/', (req, res, next) => {
     $inventory: menuItemData.inventory,
     $price: menuItemData.price,
     $menu_id: menu.id,
-  }, function(error) {
-    if (error) {
-      // return res.status(500).send();
-      // res.status(500).send();
-      next(error);
-      return;
+  }, function(createError) {
+    if (createError) {
+      return next(createError);
     }
 
-    db.get('SELECT * FROM MenuItem WHERE id = $id', { $id: this.lastID }, (error, menuItem) => {
-      if (error) {
-        // res.status(500).send();
-        next(error);
-        return;
+    db.get('SELECT * FROM MenuItem WHERE id = $id', { $id: this.lastID }, (selectError, menuItem) => {
+      if (selectError) {
+        return next(selectError);
       }
 
       res.status(201).send({ menuItem });
@@ -81,8 +75,7 @@ menuItemRouter.put('/:menuItemId', (req, res, next) => {
   const menu = req.menu;
 
   if (!hasRequiredMenItemFields(menuItemData)) {
-    res.status(400).send();
-    return;
+    return res.status(400).send();
   }
 
   db.run('UPDATE MenuItem SET name = $name, description = $description, inventory = $inventory, price = $price WHERE menuItem.id = $id', {
@@ -90,22 +83,15 @@ menuItemRouter.put('/:menuItemId', (req, res, next) => {
     $description: menuItemData.description,
     $inventory: menuItemData.inventory,
     $price: menuItemData.price,
-    // $menu_id: menu.id,
     $id: menuItemId,
-  }, (error) => {
-    if (error) {
-      // res.status(500).send();
-      // return;
-      next(error);
-      return;
+  }, (updateError) => {
+    if (updateError) {
+      return next(updateError);
     }
 
-    db.get('SELECT * FROM MenuItem WHERE id = $id', { $id: menuItemId }, (error, menuItem) => {
-      if (error) {
-      // res.status(500).send();
-      // return;
-      next(error);
-      return;
+    db.get('SELECT * FROM MenuItem WHERE id = $id', { $id: menuItemId }, (selectError, menuItem) => {
+      if (selectError) {
+        return next(selectError);
       }
 
       res.status(200).send({ menuItem });
@@ -118,10 +104,7 @@ menuItemRouter.delete('/:menuItemId', (req, res, next) => {
 
   db.run('DELETE FROM MenuItem WHERE id = $id', { $id: menuItemId }, (error, menuItem) => {
     if (error) {
-      // res.status(500).send();
-      // return;
-      next(error);
-      return;
+      return next(error);
     }
 
     res.status(204).send({ menuItem });

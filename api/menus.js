@@ -26,8 +26,7 @@ menuRouter.param('menuId', (req, res, next, id) => {
 menuRouter.get('/', (req, res, next) => {
   db.all('SELECT * FROM Menu', (error, menus) => {
     if (error) {
-      next(error);
-      return;
+      return next(error);
     }
     res.send({ menus });
   })
@@ -42,19 +41,14 @@ menuRouter.post('/', (req, res, next) => {
 
   db.run('INSERT INTO Menu (title) VALUES ($title)', {
     $title: menuData.title,
-  }, function(error) {
-    if (error) {
-      // return res.status(500).send();
-      // res.status(500).send();
-      next(error);
-      return;
+  }, function(createError) {
+    if (createError) {
+      return next(createError);
     }
 
-    db.get('SELECT * FROM Menu WHERE id = $id', { $id: this.lastID }, (error, menu) => {
-      if (error) {
-        // res.status(500).send();
-        next(error);
-        return;
+    db.get('SELECT * FROM Menu WHERE id = $id', { $id: this.lastID }, (selectError, menu) => {
+      if (selectError) {
+        return next(selectError);
       }
 
       res.status(201).send({ menu });
@@ -73,27 +67,20 @@ menuRouter.put('/:menuId', (req, res, next) => {
   const menuId = req.menu.id;
 
   if (!hasRequiredMenuFields(menuData)) {
-    res.status(400).send();
-    return;
+    return res.status(400).send();
   }
 
   db.run('UPDATE Menu SET title = $title WHERE $id = $id', {
     $title: menuData.title,
     $id: menuId,
-  }, (error) => {
-    if (error) {
-      // res.status(500).send();
-      // return;
-      next(error);
-      return;
+  }, (updateError) => {
+    if (updateError) {
+      return next(updateError);
     }
 
-    db.get('SELECT * FROM Menu WHERE id = $id', { $id: menuId }, (error, menu) => {
-      if (error) {
-      // res.status(500).send();
-      // return;
-      next(error);
-      return;
+    db.get('SELECT * FROM Menu WHERE id = $id', { $id: menuId }, (selectError, menu) => {
+      if (selectError) {
+        return next(selectError);
       }
 
       res.status(200).send({ menu });
@@ -104,31 +91,18 @@ menuRouter.put('/:menuId', (req, res, next) => {
 menuRouter.delete('/:menuId', (req, res, next) => {
   const menu = req.menu;
 
-  // console.log('>>>>>>>>>>>>>', menu.id);
-
-  // db.all('SELECT * FROM MenuItem', (error, menuItems) => {
-  //   console.log('???????', menuItems)
-  // });
-
-  db.get('SELECT * FROM MenuItem WHERE menu_id = $menu_id', { $menu_id: menu.id }, (error, menuItem) => {
-    if (error) {
-      // res.status(500).send();
-      // return;
-      next(error);
-      return;
+  db.get('SELECT * FROM MenuItem WHERE menu_id = $menu_id', { $menu_id: menu.id }, (selectError, menuItem) => {
+    if (selectError) {
+      return next(selectError);
     }
 
     if (menuItem) {
-      res.status(400).send();
-      return;
+      return res.status(400).send();
     }
 
-    db.run('DELETE FROM Menu WHERE id = $id', { $id: menu.id }, (error1) => {
-      if (error1) {
-      // res.status(500).send();
-      // return;
-      next(error1);
-      return;
+    db.run('DELETE FROM Menu WHERE id = $id', { $id: menu.id }, (deleteError) => {
+      if (deleteError) {
+        return next(deleteError);
       }
 
       res.status(204).send({ menu });
